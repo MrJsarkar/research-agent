@@ -39,5 +39,6 @@ This app is ready for immediate deployment on Streamlit Cloud (Free Tier).
    - Click **"Deploy!"**.
 
 ### Notes:
-- **No API Keys Needed**: This agent uses DuckDuckGo (via `duckduckgo-search`) and Wikipedia (public API), so you don't need to configure secrets.
-- **Robustness**: The app automatically switches to Wikipedia if DuckDuckGo rate-limits the cloud server IP.
+- **API Key Required**: This app uses **Tavily AI Search**. Get a free key at [tavily.com](https://tavily.com).
+  - **Local**: Add `TAVILY_API_KEY` to your `.env` file or environment variables.
+  - **Streamlit Cloud**: Add `TAVILY_API_KEY` in the app's **Secrets** settings.
