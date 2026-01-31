@@ -1,4 +1,8 @@
 import streamlit as st
+
+# Immediately set page config (must be first Streamlit command)
+st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
+
 import json
 from datetime import datetime
 from duckduckgo_search import DDGS
@@ -121,11 +125,7 @@ Analysis of {len(all_results)} sources across {len(sub_questions)} research angl
         return synthesis
 
 def main():
-    st.set_page_config(
-        page_title="Research Agent",
-        page_icon="🔍",
-        layout="wide"
-    )
+    # Page config already set at top level
     
     # Custom CSS
     st.markdown("""
