@@ -1,23 +1,29 @@
 import streamlit as st
 import json
+import traceback
 from datetime import datetime
 from duckduckgo_search import DDGS
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import time
 import requests
 import urllib.parse
 
 # Set page config (must be first Streamlit command after imports)
-st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
+try:
+    st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
+except Exception as e:
+    pass  # Page config already set, ignore on reruns
+
 
 class ResearchAgent:
     def __init__(self):
         self.search_history = []
         self.findings = []
         
-    def search_with_fallback(self, query: str, max_results: int = 5) -> List[Dict]:
-        """Try DuckDuckGo first, fallback to Wikipedia if blocked"""
+    def search_with_fallback(self, query: str, max_results: int = 5) -> Tuple[List[Dict], bool]:
+        """Try DuckDuckGo first, fallback to Wikipedia if blocked. Returns (results, used_fallback)"""
         results = []
+        used_fallback = False
         
         # Try DuckDuckGo with retries
         for attempt in range(3):
@@ -25,15 +31,14 @@ class ResearchAgent:
                 with DDGS() as ddgs:
                     results = list(ddgs.text(query, max_results=max_results))
                     if results:
-                        return results
+                        return results, False
             except Exception as e:
                 if attempt < 2:
                     time.sleep(2 ** attempt)  # Exponential backoff
                 continue
         
         # Fallback to Wikipedia if DDG fails (reliable, no API key needed)
-        st.warning("⚠️ Using Wikipedia fallback (DDG blocked on cloud)")
-        return self.search_wikipedia(query, max_results)
+        return self.search_wikipedia(query, max_results), True
     
     def search_wikipedia(self, query: str, max_results: int = 5) -> List[Dict]:
         """Wikipedia API - works reliably on Streamlit Cloud"""
@@ -196,7 +201,11 @@ def main():
                               f"<b>🔎 {question}</b></div>", 
                               unsafe_allow_html=True)
                     
-                    results = agent.search_with_fallback(question, results_per_query)
+                    results, used_fallback = agent.search_with_fallback(question, results_per_query)
+                    
+                    if used_fallback:
+                        st.warning("⚠️ Using Wikipedia fallback (DDG blocked on cloud)")
+                    
                     all_results.extend(results)
                     
                     if results:
@@ -236,7 +245,6 @@ def main():
         
     except Exception as e:
         st.error(f"❌ Application error: {str(e)}")
-        import traceback
         st.error(traceback.format_exc())
 
 if __name__ == "__main__":
@@ -244,5 +252,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         st.error(f"❌ Fatal error: {str(e)}")
-        import traceback
         st.error(traceback.format_exc())
