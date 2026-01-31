@@ -1,8 +1,4 @@
 import streamlit as st
-
-# Immediately set page config (must be first Streamlit command)
-st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
-
 import json
 from datetime import datetime
 from duckduckgo_search import DDGS
@@ -10,6 +6,9 @@ from typing import List, Dict
 import time
 import requests
 import urllib.parse
+
+# Set page config (must be first Streamlit command after imports)
+st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
 
 class ResearchAgent:
     def __init__(self):
