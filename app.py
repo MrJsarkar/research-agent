@@ -128,112 +128,112 @@ def main():
         # Page config already set at top level
         
         # Custom CSS
-    st.markdown("""
-    <style>
-    .main {background-color: #0e1117;}
-    .stProgress > div > div > div > div {background-color: #00adb5;}
-    .research-card {
-        background-color: #1e1e1e;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 4px solid #00adb5;
-        margin: 10px 0;
-    }
-    .fallback-notice {
-        background-color: #2d2d2d;
-        border-left: 4px solid #ffa500;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 0.9em;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
-    with col2:
-        st.title("🔍 Autonomous Research Agent")
-        st.caption("Plan · Search (with Fallback) · Synthesize · Cite")
-    
-    with st.sidebar:
-        st.header("⚙️ Configuration")
-        depth = st.slider("Research Depth", 1, 4, 3)
-        results_per_query = st.slider("Sources per Angle", 2, 5, 3)
-        st.divider()
-        st.info("🔧 **Auto-Fallback**: If DuckDuckGo blocks cloud IPs, automatically switches to Wikipedia API")
-    
-    query = st.text_input("🎯 Research Topic", 
-                         placeholder="e.g., 'CRISPR therapy 2024' or 'Quantum computing breakthroughs'",
-                         key="query")
-    
-    if st.button("🚀 Start Research", type="primary", use_container_width=True):
-        if not query:
-            st.warning("Please enter a research topic")
-            return
+        st.markdown("""
+        <style>
+        .main {background-color: #0e1117;}
+        .stProgress > div > div > div > div {background-color: #00adb5;}
+        .research-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #00adb5;
+            margin: 10px 0;
+        }
+        .fallback-notice {
+            background-color: #2d2d2d;
+            border-left: 4px solid #ffa500;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
+        with col2:
+            st.title("🔍 Autonomous Research Agent")
+            st.caption("Plan · Search (with Fallback) · Synthesize · Cite")
+        
+        with st.sidebar:
+            st.header("⚙️ Configuration")
+            depth = st.slider("Research Depth", 1, 4, 3)
+            results_per_query = st.slider("Sources per Angle", 2, 5, 3)
+            st.divider()
+            st.info("🔧 **Auto-Fallback**: If DuckDuckGo blocks cloud IPs, automatically switches to Wikipedia API")
+        
+        query = st.text_input("🎯 Research Topic", 
+                             placeholder="e.g., 'CRISPR therapy 2024' or 'Quantum computing breakthroughs'",
+                             key="query")
+        
+        if st.button("🚀 Start Research", type="primary", use_container_width=True):
+            if not query:
+                st.warning("Please enter a research topic")
+                return
+                
+            agent = ResearchAgent()
+            progress_bar = st.progress(0)
+            status_text = st.empty()
             
-        agent = ResearchAgent()
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        # Planning
-        status_text.text("Phase 1/3: Strategizing...")
-        sub_questions = agent.plan_research(query)
-        progress_bar.progress(25)
-        
-        with st.expander("📋 Research Plan", expanded=True):
-            for i, q in enumerate(sub_questions[:depth], 1):
-                st.write(f"**{i}.** {q}")
-        
-        # Execution with fallback
-        status_text.text("Phase 2/3: Gathering sources...")
-        all_results = []
-        
-        cols = st.columns(min(depth, 2))
-        for idx, question in enumerate(sub_questions[:depth]):
-            with cols[idx % 2]:
-                st.markdown(f"<div class='research-card'>"
-                          f"<b>🔎 {question}</b></div>", 
-                          unsafe_allow_html=True)
-                
-                results = agent.search_with_fallback(question, results_per_query)
-                all_results.extend(results)
-                
-                if results:
-                    st.success(f"✅ {len(results)} sources")
-                    # Show first result preview
-                    with st.expander("Preview top result"):
-                        st.write(f"**{results[0]['title']}**")
-                        st.caption(results[0]['body'][:100] + "...")
-                else:
-                    st.error("❌ No sources found")
-                
-                progress = 25 + (50 * (idx + 1) // depth)
-                progress_bar.progress(progress)
-        
-        # Synthesis
-        status_text.text("Phase 3/3: Synthesizing report...")
-        report = agent.synthesize(query, sub_questions[:depth], all_results)
-        progress_bar.progress(100)
-        status_text.success("✅ Research complete!")
-        
-        # Display
-        st.divider()
-        tab1, tab2 = st.tabs(["📄 Report", "📊 Raw Data"])
-        
-        with tab1:
-            st.markdown(report)
-            st.download_button(
-                label="Download Markdown",
-                data=report,
-                file_name=f"research_{query[:20].replace(' ', '_')}.md",
-                mime="text/markdown"
-            )
+            # Planning
+            status_text.text("Phase 1/3: Strategizing...")
+            sub_questions = agent.plan_research(query)
+            progress_bar.progress(25)
             
-        with tab2:
-            st.json([{"title": r['title'], "url": r['href'], "source": r.get('source', 'web')} 
-                    for r in all_results])
-    
+            with st.expander("📋 Research Plan", expanded=True):
+                for i, q in enumerate(sub_questions[:depth], 1):
+                    st.write(f"**{i}.** {q}")
+            
+            # Execution with fallback
+            status_text.text("Phase 2/3: Gathering sources...")
+            all_results = []
+            
+            cols = st.columns(min(depth, 2))
+            for idx, question in enumerate(sub_questions[:depth]):
+                with cols[idx % 2]:
+                    st.markdown(f"<div class='research-card'>"
+                              f"<b>🔎 {question}</b></div>", 
+                              unsafe_allow_html=True)
+                    
+                    results = agent.search_with_fallback(question, results_per_query)
+                    all_results.extend(results)
+                    
+                    if results:
+                        st.success(f"✅ {len(results)} sources")
+                        # Show first result preview
+                        with st.expander("Preview top result"):
+                            st.write(f"**{results[0]['title']}**")
+                            st.caption(results[0]['body'][:100] + "...")
+                    else:
+                        st.error("❌ No sources found")
+                    
+                    progress = 25 + (50 * (idx + 1) // depth)
+                    progress_bar.progress(progress)
+            
+            # Synthesis
+            status_text.text("Phase 3/3: Synthesizing report...")
+            report = agent.synthesize(query, sub_questions[:depth], all_results)
+            progress_bar.progress(100)
+            status_text.success("✅ Research complete!")
+            
+            # Display
+            st.divider()
+            tab1, tab2 = st.tabs(["📄 Report", "📊 Raw Data"])
+            
+            with tab1:
+                st.markdown(report)
+                st.download_button(
+                    label="Download Markdown",
+                    data=report,
+                    file_name=f"research_{query[:20].replace(' ', '_')}.md",
+                        mime="text/markdown"
+                )
+                
+            with tab2:
+                st.json([{"title": r['title'], "url": r['href'], "source": r.get('source', 'web')} 
+                        for r in all_results])
+        
     except Exception as e:
         st.error(f"❌ Application error: {str(e)}")
         import traceback
