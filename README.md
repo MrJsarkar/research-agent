@@ -38,6 +38,19 @@ This app is ready for immediate deployment on Streamlit Cloud (Free Tier).
    - Main file path: `app.py`.
    - Click **"Deploy!"**.
 
+## 🚀 Deployment (Render)
+
+1. **Create Web Service**:
+   - Link your GitHub repo.
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `streamlit run app.py`
+
+2. **Environment Variables**:
+   - Go to **Environment** tab.
+   - Add Key: `TAVILY_API_KEY`
+   - Add Value: `your-api-key-here`
+
+
 ### Notes:
 - **API Key Required**: This app uses **Tavily AI Search**. Get a free key at [tavily.com](https://tavily.com).
   - **Local**: Add `TAVILY_API_KEY` to your `.env` file or environment variables.
