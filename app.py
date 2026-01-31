@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+import traceback
 from datetime import datetime
 from typing import List, Dict
 import time
@@ -22,6 +23,21 @@ def get_tavily_client():
     except:
         # For local/other platforms
         return os.getenv("TAVILY_API_KEY", "")
+
+# Optional: Try to import duckduckgo-search if available
+try:
+    from duckduckgo_search import DDGS
+    DDGS_AVAILABLE = True
+except ImportError:
+    DDGS_AVAILABLE = False
+    DDGS = None
+
+# Set page config (must be first Streamlit command after imports)
+try:
+    st.set_page_config(page_title="Research Agent", page_icon="🔍", layout="wide")
+except Exception as e:
+    pass  # Page config already set, ignore on reruns
+
 
 class ResearchAgent:
     def __init__(self):
@@ -346,4 +362,8 @@ def main():
             )
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        st.error(f"❌ Fatal error: {str(e)}")
+        st.error(traceback.format_exc())
