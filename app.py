@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import traceback
 from datetime import datetime
-from duckduckgo_search import DDGS
 from typing import List, Dict, Tuple
 import time
 import requests
@@ -21,24 +20,9 @@ class ResearchAgent:
         self.findings = []
         
     def search_with_fallback(self, query: str, max_results: int = 5) -> Tuple[List[Dict], bool]:
-        """Try DuckDuckGo first, fallback to Wikipedia if blocked. Returns (results, used_fallback)"""
-        results = []
-        used_fallback = False
-        
-        # Try DuckDuckGo with retries
-        for attempt in range(3):
-            try:
-                with DDGS() as ddgs:
-                    results = list(ddgs.text(query, max_results=max_results))
-                    if results:
-                        return results, False
-            except Exception as e:
-                if attempt < 2:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-                continue
-        
-        # Fallback to Wikipedia if DDG fails (reliable, no API key needed)
-        return self.search_wikipedia(query, max_results), True
+        """Use Wikipedia API for reliable search on Streamlit Cloud"""
+        results = self.search_wikipedia(query, max_results)
+        return results, False  # No fallback needed, Wikipedia is the primary source
     
     def search_wikipedia(self, query: str, max_results: int = 5) -> List[Dict]:
         """Wikipedia API - works reliably on Streamlit Cloud"""
@@ -159,14 +143,14 @@ def main():
             st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
         with col2:
             st.title("🔍 Autonomous Research Agent")
-            st.caption("Plan · Search (with Fallback) · Synthesize · Cite")
+            st.caption("Plan · Search · Synthesize · Cite")
         
         with st.sidebar:
             st.header("⚙️ Configuration")
             depth = st.slider("Research Depth", 1, 4, 3)
             results_per_query = st.slider("Sources per Angle", 2, 5, 3)
             st.divider()
-            st.info("🔧 **Auto-Fallback**: If DuckDuckGo blocks cloud IPs, automatically switches to Wikipedia API")
+            st.info("📚 **Powered by Wikipedia**: Reliable search API with no rate-limiting issues on cloud")
         
         query = st.text_input("🎯 Research Topic", 
                              placeholder="e.g., 'CRISPR therapy 2024' or 'Quantum computing breakthroughs'",
@@ -202,9 +186,6 @@ def main():
                               unsafe_allow_html=True)
                     
                     results, used_fallback = agent.search_with_fallback(question, results_per_query)
-                    
-                    if used_fallback:
-                        st.warning("⚠️ Using Wikipedia fallback (DDG blocked on cloud)")
                     
                     all_results.extend(results)
                     

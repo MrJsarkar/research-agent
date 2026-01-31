@@ -39,5 +39,5 @@ This app is ready for immediate deployment on Streamlit Cloud (Free Tier).
    - Click **"Deploy!"**.
 
 ### Notes:
-- **No API Keys Needed**: This agent uses DuckDuckGo (via `duckduckgo-search`) and Wikipedia (public API), so you don't need to configure secrets.
-- **Robustness**: The app automatically switches to Wikipedia if DuckDuckGo rate-limits the cloud server IP.
+- **No API Keys Needed**: This agent uses Wikipedia's public API, so you don't need to configure any secrets or API keys.
+- **Reliable on Cloud**: Uses Wikipedia's stable API which works consistently on Streamlit Cloud without rate-limiting issues.
