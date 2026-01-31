@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 import json
 import traceback
 from datetime import datetime
@@ -6,6 +7,14 @@ from typing import List, Dict, Tuple
 import time
 import requests
 import urllib.parse
+
+# Optional: Try to import duckduckgo-search if available
+try:
+    from duckduckgo_search import DDGS
+    DDGS_AVAILABLE = True
+except ImportError:
+    DDGS_AVAILABLE = False
+    DDGS = None
 
 # Set page config (must be first Streamlit command after imports)
 try:
@@ -20,9 +29,25 @@ class ResearchAgent:
         self.findings = []
         
     def search_with_fallback(self, query: str, max_results: int = 5) -> Tuple[List[Dict], bool]:
-        """Use Wikipedia API for reliable search on Streamlit Cloud"""
-        results = self.search_wikipedia(query, max_results)
-        return results, False  # No fallback needed, Wikipedia is the primary source
+        """Try DuckDuckGo first if available, fallback to Wikipedia. Returns (results, used_fallback)"""
+        results = []
+        used_fallback = False
+        
+        # Try DuckDuckGo with retries if available
+        if DDGS_AVAILABLE:
+            for attempt in range(3):
+                try:
+                    with DDGS() as ddgs:
+                        results = list(ddgs.text(query, max_results=max_results))
+                        if results:
+                            return results, False
+                except Exception as e:
+                    if attempt < 2:
+                        time.sleep(2 ** attempt)  # Exponential backoff
+                    continue
+        
+        # Fallback to Wikipedia (always available)
+        return self.search_wikipedia(query, max_results), True
     
     def search_wikipedia(self, query: str, max_results: int = 5) -> List[Dict]:
         """Wikipedia API - works reliably on Streamlit Cloud"""
@@ -103,12 +128,12 @@ Analysis of {len(all_results)} sources across {len(sub_questions)} research angl
         synthesis += """
 ## Methodology
 - **Planning**: Query decomposition into sub-questions
-- **Execution**: Wikipedia API search
+- **Execution**: DuckDuckGo search → Wikipedia fallback
 - **Synthesis**: Cross-reference and summarization
-- **Reliability**: Consistent performance on Streamlit Cloud
+- **Resilience**: Works reliably on Streamlit Cloud
 
 ---
-*Research Agent v1.2 | Wikipedia Powered*
+*Research Agent v1.3 | Smart Fallback Search*
 """
         return synthesis
 
@@ -150,7 +175,7 @@ def main():
             depth = st.slider("Research Depth", 1, 4, 3)
             results_per_query = st.slider("Sources per Angle", 2, 5, 3)
             st.divider()
-            st.info("📚 **Powered by Wikipedia**: Reliable search API with no rate-limiting issues on cloud")
+            st.info("📚 **Smart Search**: Uses DuckDuckGo if available, falls back to Wikipedia on Streamlit Cloud")
         
         query = st.text_input("🎯 Research Topic", 
                              placeholder="e.g., 'CRISPR therapy 2024' or 'Quantum computing breakthroughs'",
@@ -186,6 +211,9 @@ def main():
                               unsafe_allow_html=True)
                     
                     results, used_fallback = agent.search_with_fallback(question, results_per_query)
+                    
+                    if used_fallback:
+                        st.warning("⚠️ Using Wikipedia (DuckDuckGo unavailable)")
                     
                     all_results.extend(results)
                     
