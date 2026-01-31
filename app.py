@@ -38,12 +38,12 @@ class ResearchAgent:
             }
             
             response = requests.get(search_url, params=params, timeout=10)
+            response.raise_for_status()
             data = response.json()
             
             results = []
             for item in data.get("query", {}).get("search", []):
                 # Get page URL
-                page_id = item["pageid"]
                 title = item["title"]
                 url = f"https://en.wikipedia.org/wiki/{urllib.parse.quote(title.replace(' ', '_'))}"
                 
@@ -56,7 +56,7 @@ class ResearchAgent:
             
             return results
         except Exception as e:
-            st.error(f"Wikipedia fallback also failed: {e}")
+            # Return empty list on error - error will be displayed in UI
             return []
     
     def plan_research(self, query: str) -> List[str]:
@@ -103,12 +103,12 @@ Analysis of {len(all_results)} sources across {len(sub_questions)} research angl
         synthesis += """
 ## Methodology
 - **Planning**: Query decomposition into sub-questions
-- **Execution**: Multi-source search (Web → Wikipedia fallback)
+- **Execution**: Wikipedia API search
 - **Synthesis**: Cross-reference and summarization
-- **Resilience**: Automatic fallback if primary search blocked
+- **Reliability**: Consistent performance on Streamlit Cloud
 
 ---
-*Research Agent v1.1 | Robust Search Pipeline*
+*Research Agent v1.2 | Wikipedia Powered*
 """
         return synthesis
 
@@ -217,7 +217,7 @@ def main():
                     label="Download Markdown",
                     data=report,
                     file_name=f"research_{query[:20].replace(' ', '_')}.md",
-                        mime="text/markdown"
+                    mime="text/markdown"
                 )
                 
             with tab2:
