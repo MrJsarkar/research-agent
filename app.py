@@ -16,13 +16,17 @@ st.set_page_config(
 
 # Initialize Tavily
 def get_tavily_client():
-    """Get Tavily API key from secrets or env"""
+    """Get API key from Environment Variable (Render) or Secrets (Streamlit Cloud)"""
+    # Check Environment Variable FIRST (Render method - no warnings)
+    env_key = os.getenv("TAVILY_API_KEY")
+    if env_key:
+        return env_key
+    
+    # Then check Streamlit secrets (Streamlit Cloud method)
     try:
-        # For Streamlit Cloud (secrets)
-        return st.secrets["TAVILY_API_KEY"]
-    except:
-        # For local/other platforms
-        return os.getenv("TAVILY_API_KEY", "")
+        return st.secrets.get("TAVILY_API_KEY", "")
+    except Exception:
+        return ""
 
 # Optional: Try to import duckduckgo-search if available
 try:
@@ -169,20 +173,14 @@ This report was generated using:
         return report
 
 def check_api_key():
-    """Check if API key is configured"""
+    """Check if API key is configured without triggering warnings"""
     key = get_tavily_client()
     if not key:
-        st.error("🚨 **API Key Missing!**")
+        st.error("🚨 **TAVILY_API_KEY not found!**")
         st.info("""
-        To enable search, add your Tavily API key:
-        
-        **For Streamlit Cloud:**
-        1. Go to your app dashboard → **⋮** → **Secrets**
-        2. Add: `TAVILY_API_KEY` = `tvly-your-key-here`
-        3. Reboot app
-        
-        **For Local:**
-        Create `.env` file with: `TAVILY_API_KEY=tvly-your-key-here`
+        **Render.com users:** Add to Dashboard → Environment → Environment Variables  
+        **Streamlit Cloud users:** Add to App Settings → Secrets  
+        **Local users:** Create `.env` file or use `.streamlit/secrets.toml`
         
         [Get free API key at tavily.com](https://tavily.com)
         """)
