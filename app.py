@@ -124,9 +124,10 @@ Analysis of {len(all_results)} sources across {len(sub_questions)} research angl
         return synthesis
 
 def main():
-    # Page config already set at top level
-    
-    # Custom CSS
+    try:
+        # Page config already set at top level
+        
+        # Custom CSS
     st.markdown("""
     <style>
     .main {background-color: #0e1117;}
@@ -232,6 +233,16 @@ def main():
         with tab2:
             st.json([{"title": r['title'], "url": r['href'], "source": r.get('source', 'web')} 
                     for r in all_results])
+    
+    except Exception as e:
+        st.error(f"❌ Application error: {str(e)}")
+        import traceback
+        st.error(traceback.format_exc())
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        st.error(f"❌ Fatal error: {str(e)}")
+        import traceback
+        st.error(traceback.format_exc())
