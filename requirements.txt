@@ -1,2 +1,7 @@
-streamlit==1.37.0
-requests==2.31.0
+# Generative Parallel World Simulation Platform Requirements
+
+fastapi==0.103.1
+uvicorn==0.23.2
+pydantic==2.3.0
+python-multipart==0.0.6
+PyPDF2==3.0.1

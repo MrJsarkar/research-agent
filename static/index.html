@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Parallel World Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="glow-orb" id="orb1"></div>
+    <div class="glow-orb" id="orb2"></div>
+
+    <header>
+        <div class="logo">
+            <span class="pulse"></span> 
+            GENESIS ENGINE 
+        </div>
+        <div class="status-panel">System Status: <span class="online">ONLINE</span></div>
+    </header>
+
+    <main class="container">
+        <!-- SETUP VIEW -->
+        <section id="setup-view" class="glass-panel active">
+            <h1 class="glitch" data-text="INITIALIZE REALITY">INITIALIZE REALITY</h1>
+            <p class="subtitle">Upload a "Reality Seed" (text, document) to define the initial state of the parallel universe.</p>
+            
+            <div class="upload-zone" id="drop-zone">
+                <input type="file" id="file-upload" accept=".pdf,.md,.txt" style="display: none;">
+                <div class="upload-icon">⎈</div>
+                <p>Drag & Drop Reality Seed Here<br><span>or click to browse</span><br><span style="font-size:0.8rem; color:#8892b0">Supported formats: PDF, MD, TXT</span></p>
+                <textarea id="seed-input" placeholder="Alternatively, paste seed text constraints here... e.g. 'A cyberpunk corporate utopia facing resource scarcity.'"></textarea>
+            </div>
+            
+            <button id="btn-spawn" class="cyber-btn">
+                <span class="btn-text">SPAWN WORLD</span>
+                <span class="btn-glitch"></span>
+            </button>
+        </section>
+
+        <!-- DASHBOARD VIEW -->
+        <section id="dashboard-view" class="glass-panel hidden">
+            <div class="dashboard-header">
+                <h2>WORLD ID: <span id="world-id-display" class="highlight">PENDING</span></h2>
+                <div class="controls">
+                    <button id="btn-epoch-1" class="cyber-btn small">ADVANCE 1 EPOCH</button>
+                    <button id="btn-epoch-10" class="cyber-btn small">ADVANCE 10 EPOCHS</button>
+                    <button id="btn-auto" class="cyber-btn small neon-pink">AUTO-RUN</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>EPOCH</h3>
+                    <div class="value" id="val-epoch">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>POPULATION</h3>
+                    <div class="value" id="val-population">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>STABILITY</h3>
+                    <div class="value" id="val-stability">0%</div>
+                </div>
+                <div class="metric-card">
+                    <h3>TECH LEVEL</h3>
+                    <div class="value" id="val-tech">1.0</div>
+                </div>
+            </div>
+
+            <div class="world-details">
+                <div class="cohorts-panel">
+                    <h3>COHORTS [MILLION-LEVEL ABSTRACTION]</h3>
+                    <div id="cohorts-list" class="cohorts-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <div class="events-panel">
+                    <h3>LIVE EVENT STREAM</h3>
+                    <div id="event-log" class="event-log">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="/static/main.js"></script>
+</body>
+</html>
