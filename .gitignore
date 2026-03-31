@@ -29,8 +29,20 @@ MANIFEST
 # Virtual environments
 venv/
 env/
-.env
 .venv/
+
+# ── Secrets & environment files (NEVER commit these) ──────────
+.env
+.env.*
+*.env
+!.env.example
+.envrc
+secrets.json
+secrets.yaml
+secrets.toml
+service-account*.json
+*credentials*.json
+gcloud-service-key*.json
 
 # Streamlit
 .streamlit/secrets.toml
