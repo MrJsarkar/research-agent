@@ -1,7 +1,10 @@
-# Generative Parallel World Simulation Platform Requirements
-
 fastapi==0.103.1
 uvicorn==0.23.2
 pydantic==2.3.0
 python-multipart==0.0.6
-PyPDF2==3.0.1
+pypdf>=4.0.0
+groq>=1.1.1
+python-dotenv==1.0.0
+httpx>=0.27.0
+beautifulsoup4>=4.12.0
+sse-starlette>=2.0.0

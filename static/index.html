@@ -3,91 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generative Parallel World Simulation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Autonomous Research Agent</title>
+    <meta name="description" content="AI-powered autonomous research agent that plans, searches, synthesises, and reports.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <div id="particles-js"></div>
-    <div class="glow-orb" id="orb1"></div>
-    <div class="glow-orb" id="orb2"></div>
 
-    <header>
-        <div class="logo">
-            <span class="pulse"></span> 
-            GENESIS ENGINE 
+    <!-- Ambient background elements -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+    <canvas id="grid-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        <path d="M11 8v6M8 11h6"/>
+                    </svg>
+                </div>
+                <span class="logo-text">ResearchAgent</span>
+                <span class="logo-badge">AUTONOMOUS</span>
+            </div>
+            <div class="header-status" id="header-status">
+                <span class="status-dot"></span>
+                <span id="status-text">Ready</span>
+            </div>
         </div>
-        <div class="status-panel">System Status: <span class="online">ONLINE</span></div>
     </header>
 
-    <main class="container">
-        <!-- SETUP VIEW -->
-        <section id="setup-view" class="glass-panel active">
-            <h1 class="glitch" data-text="INITIALIZE REALITY">INITIALIZE REALITY</h1>
-            <p class="subtitle">Upload a "Reality Seed" (text, document) to define the initial state of the parallel universe.</p>
-            
+    <!-- Main layout -->
+    <main class="app-layout">
+
+        <!-- ── LEFT: Input Panel ─────────────────────────────────────────── -->
+        <aside class="input-panel glass-panel" id="input-panel">
+            <div class="panel-header">
+                <h2>Research Query</h2>
+                <p class="panel-subtitle">Describe your research topic or question in detail.</p>
+            </div>
+
+            <textarea
+                id="topic-input"
+                class="topic-textarea"
+                placeholder="e.g. What are the long-term economic effects of universal basic income?"
+                rows="6"
+            ></textarea>
+
             <div class="upload-zone" id="drop-zone">
-                <input type="file" id="file-upload" accept=".pdf,.md,.txt" style="display: none;">
-                <div class="upload-icon">⎈</div>
-                <p>Drag & Drop Reality Seed Here<br><span>or click to browse</span><br><span style="font-size:0.8rem; color:#8892b0">Supported formats: PDF, MD, TXT</span></p>
-                <textarea id="seed-input" placeholder="Alternatively, paste seed text constraints here... e.g. 'A cyberpunk corporate utopia facing resource scarcity.'"></textarea>
+                <input type="file" id="file-upload" accept=".pdf,.md,.txt" style="display:none;">
+                <div class="upload-inner">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <span>Upload document <em>(PDF, MD, TXT)</em></span>
+                </div>
             </div>
-            
-            <button id="btn-spawn" class="cyber-btn">
-                <span class="btn-text">SPAWN WORLD</span>
-                <span class="btn-glitch"></span>
+
+            <div class="examples">
+                <p class="examples-label">Try an example:</p>
+                <div class="example-pills" id="example-pills">
+                    <button class="pill" data-q="What are the effects of sleep deprivation on cognitive performance?">Sleep &amp; cognition</button>
+                    <button class="pill" data-q="How does large-scale deforestation affect regional climate patterns?">Deforestation &amp; climate</button>
+                    <button class="pill" data-q="What are the risks and benefits of mRNA vaccine technology?">mRNA vaccines</button>
+                    <button class="pill" data-q="How does remote work affect employee productivity and wellbeing?">Remote work impact</button>
+                </div>
+            </div>
+
+            <button class="start-btn" id="btn-start">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span id="btn-text">Start Research</span>
             </button>
-        </section>
 
-        <!-- DASHBOARD VIEW -->
-        <section id="dashboard-view" class="glass-panel hidden">
-            <div class="dashboard-header">
-                <h2>WORLD ID: <span id="world-id-display" class="highlight">PENDING</span></h2>
-                <div class="controls">
-                    <button id="btn-epoch-1" class="cyber-btn small">ADVANCE 1 EPOCH</button>
-                    <button id="btn-epoch-10" class="cyber-btn small">ADVANCE 10 EPOCHS</button>
-                    <button id="btn-auto" class="cyber-btn small neon-pink">AUTO-RUN</button>
+            <!-- Progress summary (visible while running) -->
+            <div class="progress-summary hidden" id="progress-summary">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p class="progress-label" id="progress-label">Initialising agent…</p>
+                <div class="phase-indicators">
+                    <div class="phase-item" id="phase-plan"><span class="phase-dot"></span>Plan</div>
+                    <div class="phase-item" id="phase-search"><span class="phase-dot"></span>Search</div>
+                    <div class="phase-item" id="phase-synthesise"><span class="phase-dot"></span>Synthesise</div>
+                    <div class="phase-item" id="phase-report"><span class="phase-dot"></span>Report</div>
                 </div>
             </div>
 
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <h3>EPOCH</h3>
-                    <div class="value" id="val-epoch">0</div>
-                </div>
-                <div class="metric-card">
-                    <h3>POPULATION</h3>
-                    <div class="value" id="val-population">0</div>
-                </div>
-                <div class="metric-card">
-                    <h3>STABILITY</h3>
-                    <div class="value" id="val-stability">0%</div>
-                </div>
-                <div class="metric-card">
-                    <h3>TECH LEVEL</h3>
-                    <div class="value" id="val-tech">1.0</div>
-                </div>
+            <button class="reset-btn hidden" id="btn-reset">← New Research</button>
+        </aside>
+
+        <!-- ── RIGHT: Output Panel ──────────────────────────────────────── -->
+        <section class="output-panel">
+
+            <!-- Tabbed view -->
+            <div class="tabs" id="tabs">
+                <button class="tab active" id="tab-stream" data-target="stream-view">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Live Stream
+                </button>
+                <button class="tab" id="tab-report" data-target="report-view">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Report
+                    <span class="tab-badge hidden" id="report-badge">●</span>
+                </button>
+                <button class="tab" id="tab-sources" data-target="sources-view">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    Sources
+                    <span class="tab-badge hidden" id="sources-badge">0</span>
+                </button>
             </div>
 
-            <div class="world-details">
-                <div class="cohorts-panel">
-                    <h3>COHORTS [MILLION-LEVEL ABSTRACTION]</h3>
-                    <div id="cohorts-list" class="cohorts-list">
-                        <!-- Populated by JS -->
+            <!-- Stream View -->
+            <div class="view-panel active glass-panel" id="stream-view">
+                <div class="empty-state" id="stream-empty">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 8v4M12 16h.01"/>
+                        </svg>
                     </div>
+                    <p>Enter a research topic and click <strong>Start Research</strong> to watch the agent work in real time.</p>
                 </div>
-                
-                <div class="events-panel">
-                    <h3>LIVE EVENT STREAM</h3>
-                    <div id="event-log" class="event-log">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
+                <div class="event-stream" id="event-stream"></div>
             </div>
+
+            <!-- Report View -->
+            <div class="view-panel glass-panel hidden" id="report-view">
+                <div class="report-empty" id="report-empty">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <p>Your research report will appear here when the agent finishes.</p>
+                </div>
+                <div class="report-toolbar hidden" id="report-toolbar">
+                    <button class="tool-btn" id="btn-copy-report" title="Copy Markdown">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Copy Markdown
+                    </button>
+                    <button class="tool-btn" id="btn-download-report" title="Download .md">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download
+                    </button>
+                </div>
+                <div class="report-content" id="report-content"></div>
+            </div>
+
+            <!-- Sources View -->
+            <div class="view-panel glass-panel hidden" id="sources-view">
+                <div class="sources-empty" id="sources-empty">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                        </svg>
+                    </div>
+                    <p>Sources gathered during research will be listed here.</p>
+                </div>
+                <div class="sources-list" id="sources-list"></div>
+            </div>
+
         </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
     <script src="/static/main.js"></script>
 </body>
 </html>
